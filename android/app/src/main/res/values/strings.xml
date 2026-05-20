@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TodoFlow</string>
+    <string name="title_activity_main">TodoFlow</string>
+    <string name="package_name">com.todoflow.app</string>
+    <string name="custom_url_scheme">com.todoflow.app</string>
+</resources>

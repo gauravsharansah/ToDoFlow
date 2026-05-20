@@ -1,0 +1,261 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  #  BUILD WINDOWS + LINUX
+  # ─────────────────────────────────────────────────────────────────
+  build-desktop-windows-linux:
+    name: Build Windows & Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Inject Firebase credentials
+        env:
+          FIREBASE_API_KEY:             ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN:         ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID:          ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET:      ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID:              ${{ secrets.FIREBASE_APP_ID }}
+        run: |
+          sed -i "s|__FIREBASE_API_KEY__|${FIREBASE_API_KEY}|g"                       src/index.html
+          sed -i "s|__FIREBASE_AUTH_DOMAIN__|${FIREBASE_AUTH_DOMAIN}|g"               src/index.html
+          sed -i "s|__FIREBASE_PROJECT_ID__|${FIREBASE_PROJECT_ID}|g"                 src/index.html
+          sed -i "s|__FIREBASE_STORAGE_BUCKET__|${FIREBASE_STORAGE_BUCKET}|g"         src/index.html
+          sed -i "s|__FIREBASE_MESSAGING_SENDER_ID__|${FIREBASE_MESSAGING_SENDER_ID}|g" src/index.html
+          sed -i "s|__FIREBASE_APP_ID__|${FIREBASE_APP_ID}|g"                         src/index.html
+
+      - name: Install Wine (for Windows build on Linux)
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y wine wine32 wine64 || true
+
+      - name: Build Windows installer & portable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:win
+
+      - name: Build Linux AppImage & deb
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run dist:linux
+
+      - name: Rename Windows & Linux artifacts with version
+        run: |
+          VERSION="${GITHUB_REF_NAME:-dev}"
+          cd dist
+          for f in *.exe; do
+            [ -f "$f" ] || continue
+            SUFFIX=$(echo "$f" | sed 's/^[^-]*-[0-9][0-9.]*-//')
+            mv "$f" "TodoFlow-${VERSION}-${SUFFIX}"
+          done
+          for f in *.AppImage; do
+            [ -f "$f" ] || continue
+            mv "$f" "TodoFlow-${VERSION}.AppImage"
+          done
+          for f in *.deb; do
+            [ -f "$f" ] || continue
+            mv "$f" "TodoFlow-${VERSION}.deb"
+          done
+          ls -lh
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-builds
+          path: dist/TodoFlow-*.exe
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-builds
+          path: |
+            dist/TodoFlow-*.AppImage
+            dist/TodoFlow-*.deb
+
+  # ─────────────────────────────────────────────────────────────────
+  #  BUILD macOS
+  # ─────────────────────────────────────────────────────────────────
+  build-desktop-mac:
+    name: Build macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Inject Firebase credentials
+        env:
+          FIREBASE_API_KEY:             ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN:         ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID:          ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET:      ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID:              ${{ secrets.FIREBASE_APP_ID }}
+        run: |
+          sed -i "" "s|__FIREBASE_API_KEY__|${FIREBASE_API_KEY}|g"                       src/index.html
+          sed -i "" "s|__FIREBASE_AUTH_DOMAIN__|${FIREBASE_AUTH_DOMAIN}|g"               src/index.html
+          sed -i "" "s|__FIREBASE_PROJECT_ID__|${FIREBASE_PROJECT_ID}|g"                 src/index.html
+          sed -i "" "s|__FIREBASE_STORAGE_BUCKET__|${FIREBASE_STORAGE_BUCKET}|g"         src/index.html
+          sed -i "" "s|__FIREBASE_MESSAGING_SENDER_ID__|${FIREBASE_MESSAGING_SENDER_ID}|g" src/index.html
+          sed -i "" "s|__FIREBASE_APP_ID__|${FIREBASE_APP_ID}|g"                         src/index.html
+
+      - name: Build macOS DMG (x64 + arm64)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # CSC_LINK: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          # CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: npm run dist:mac
+
+      - name: Rename macOS artifacts with version
+        run: |
+          VERSION="${GITHUB_REF_NAME:-dev}"
+          cd dist
+          for f in *.dmg; do
+            [ -f "$f" ] || continue
+            SUFFIX=$(echo "$f" | sed 's/^[^-]*-[0-9][0-9.]*-//')
+            mv "$f" "TodoFlow-${VERSION}-${SUFFIX}"
+          done
+          ls -lh
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-builds
+          path: dist/TodoFlow-*.dmg
+
+  # ─────────────────────────────────────────────────────────────────
+  #  BUILD ANDROID APK
+  # ─────────────────────────────────────────────────────────────────
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Inject Firebase credentials
+        env:
+          FIREBASE_API_KEY:             ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN:         ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID:          ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET:      ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID:              ${{ secrets.FIREBASE_APP_ID }}
+        run: |
+          sed -i "s|__FIREBASE_API_KEY__|${FIREBASE_API_KEY}|g"                       src/index.html
+          sed -i "s|__FIREBASE_AUTH_DOMAIN__|${FIREBASE_AUTH_DOMAIN}|g"               src/index.html
+          sed -i "s|__FIREBASE_PROJECT_ID__|${FIREBASE_PROJECT_ID}|g"                 src/index.html
+          sed -i "s|__FIREBASE_STORAGE_BUCKET__|${FIREBASE_STORAGE_BUCKET}|g"         src/index.html
+          sed -i "s|__FIREBASE_MESSAGING_SENDER_ID__|${FIREBASE_MESSAGING_SENDER_ID}|g" src/index.html
+          sed -i "s|__FIREBASE_APP_ID__|${FIREBASE_APP_ID}|g"                         src/index.html
+
+      - name: Sync Capacitor
+        run: npx cap sync android --inline
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        run: cd android && ./gradlew assembleDebug --no-daemon
+
+      - name: Build release APK (unsigned)
+        run: cd android && ./gradlew assembleRelease --no-daemon
+
+      # - name: Sign APK
+      #   uses: r0adkll/sign-android-release@v1
+      #   with:
+      #     releaseDirectory: android/app/build/outputs/apk/release
+      #     signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+      #     alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+      #     keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+      #     keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Rename APK with version
+        run: |
+          VERSION="${GITHUB_REF_NAME:-dev}"
+          mv android/app/build/outputs/apk/debug/app-debug.apk \
+             android/app/build/outputs/apk/debug/TodoFlow-${VERSION}-debug.apk || true
+          mv android/app/build/outputs/apk/release/app-release-unsigned.apk \
+             android/app/build/outputs/apk/release/TodoFlow-${VERSION}-release.apk || true
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/apk/release/*.apk
+
+  # ─────────────────────────────────────────────────────────────────
+  #  CREATE GITHUB RELEASE
+  # ─────────────────────────────────────────────────────────────────
+  release:
+    name: Create GitHub Release
+    needs: [build-desktop-windows-linux, build-desktop-mac, build-android]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-files
+
+      - name: List release files
+        run: find release-files -type f | sort
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/**/*
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
