@@ -1,7 +1,7 @@
 /** @type {import('@capacitor/cli').CapacitorConfig} */
 const config = {
   appId: 'com.todoflow.app',
-  appName: 'TodoFlow',
+  appName: 'ToDoFlow',
   webDir: 'src',
   server: {
     androidScheme: 'https',

@@ -32,7 +32,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 420, height: 820,
     minWidth: 360, minHeight: 600,
-    title: 'TodoFlow',
+    title: 'ToDoFlow',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     autoHideMenuBar: true,   // hides menu bar; still accessible via Alt key
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#0d0d1a' : '#f5f5ff',
@@ -75,7 +75,7 @@ function createWindow() {
       mainWindow.hide();
       tray && tray.displayBalloon &&
         tray.displayBalloon({
-          title: 'TodoFlow is still running',
+          title: 'ToDoFlow is still running',
           content: 'Tasks are syncing in the background. Right-click the tray icon to quit.',
           iconType: 'info',
         });
@@ -118,11 +118,11 @@ function buildAppMenu() {
     {
       role: 'help', submenu: [
         {
-          label: 'About TodoFlow',
+          label: 'About ToDoFlow',
           click: () => dialog.showMessageBox(mainWindow, {
             type: 'info',
-            title: 'TodoFlow',
-            message: `TodoFlow v${app.getVersion()}`,
+            title: 'ToDoFlow',
+            message: `ToDoFlow v${app.getVersion()}`,
             detail: 'Your tasks, beautifully organized.\nData synced globally via Firebase.\n\nGitHub: github.com/gauravsharansah/todoflow',
           }),
         },
@@ -152,7 +152,7 @@ function createTray() {
     process.platform === 'win32' ? 'icon.ico' : 'icon-512.png'
   );
   tray = new Tray(nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 }));
-  tray.setToolTip('TodoFlow');
+  tray.setToolTip('ToDoFlow');
   refreshTrayMenu();
 
   tray.on('click', () => {
@@ -167,7 +167,7 @@ function refreshTrayMenu() {
   const loginItem = app.getLoginItemSettings();
   const menu = Menu.buildFromTemplate([
     {
-      label: 'Open TodoFlow',
+      label: 'Open ToDoFlow',
       click: () => { mainWindow?.show(); mainWindow?.focus(); },
     },
     { type: 'separator' },

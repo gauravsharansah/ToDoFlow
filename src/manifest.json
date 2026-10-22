@@ -1,6 +1,6 @@
 {
-  "name": "TodoFlow",
-  "short_name": "TodoFlow",
+  "name": "ToDoFlow",
+  "short_name": "ToDoFlow",
   "description": "Your tasks, beautifully organized — synced everywhere",
   "start_url": "./index.html",
   "display": "standalone",

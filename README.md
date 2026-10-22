@@ -1,4 +1,4 @@
-# TodoFlow
+# ToDoFlow
 
 A cross-platform productivity application for **Windows, macOS, Linux, and Android** — built on Firebase with real-time cloud sync, secure email authentication, and a polished, intuitive interface.
 

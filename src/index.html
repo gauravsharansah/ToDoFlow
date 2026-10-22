@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#1a1a2e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TodoFlow">
+<meta name="apple-mobile-web-app-title" content="ToDoFlow">
 <link rel="manifest" href="manifest.json">
-<title>TodoFlow</title>
+<title>ToDoFlow</title>
 
 
 <!-- Firebase SDK v9 compat — pinned to stable 10.12.x -->
@@ -52,11 +52,11 @@
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
 
-html,body{height:100%;overflow:hidden}
+html,body{height:100%;overflow:hidden;max-width:100%;-webkit-text-size-adjust:100%}
 body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);display:flex;flex-direction:column}
 
 /* ━━━━ SCREENS ━━━━ */
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 0.25s ease;z-index:1}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;overflow-x:hidden;opacity:0;pointer-events:none;transition:opacity 0.25s ease;z-index:1}
 .screen.active{opacity:1;pointer-events:all;z-index:2}
 
 /* ━━━━ LOADING SCREEN ━━━━ */
@@ -66,9 +66,9 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 .loading-text{color:rgba(255,255,255,0.5);font-size:0.85rem}
 
 /* ━━━━ AUTH SCREEN ━━━━ */
-#auth-screen{background:linear-gradient(145deg,#0d0d1a 0%,#1a1a3e 40%,#0d0d2e 100%);align-items:center;justify-content:center;padding:2rem;overflow-y:auto}
-.auth-glow{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(91,79,255,0.18) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
-.auth-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:2.5rem 2rem;width:100%;max-width:440px;position:relative;backdrop-filter:blur(20px);box-shadow:0 0 80px rgba(91,79,255,0.15)}
+#auth-screen{background:linear-gradient(145deg,#0d0d1a 0%,#1a1a3e 40%,#0d0d2e 100%);align-items:center;justify-content:flex-start;padding:max(1rem,var(--safe-top)) 1rem max(1rem,var(--safe-bottom));overflow-y:auto;overflow-x:hidden}
+.auth-glow{position:fixed;width:min(500px,100vw);height:min(500px,100vw);background:radial-gradient(circle,rgba(91,79,255,0.18) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.auth-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:2.5rem 2rem;width:100%;max-width:440px;margin:auto;position:relative;backdrop-filter:blur(20px);box-shadow:0 0 80px rgba(91,79,255,0.15)}
 .auth-logo{text-align:center;margin-bottom:2rem}
 .auth-logo .logo-icon{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--accent),#8b5cf6);display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem;box-shadow:0 8px 32px rgba(91,79,255,0.4)}
 .auth-logo .logo-icon svg{width:32px;height:32px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -81,7 +81,7 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 
 .form-group{margin-bottom:1rem}
 .form-label{display:block;font-size:0.75rem;font-weight:600;color:rgba(255,255,255,0.5);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.4rem}
-.form-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:0.75rem 1rem;color:#fff;font-family:var(--font-body);font-size:0.9rem;outline:none;transition:all 0.2s}
+.form-input{width:100%;min-width:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:0.75rem 1rem;color:#fff;font-family:var(--font-body);font-size:0.9rem;outline:none;transition:all 0.2s}
 .form-input::placeholder{color:rgba(255,255,255,0.2)}
 .form-input:focus{border-color:rgba(91,79,255,0.6);background:rgba(91,79,255,0.08);box-shadow:0 0 0 3px rgba(91,79,255,0.12)}
 .form-input.error{border-color:rgba(255,71,87,0.6);background:rgba(255,71,87,0.06)}
@@ -93,14 +93,6 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 .eye-btn:hover{color:rgba(255,255,255,0.7)}
 .eye-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
-.avatar-upload{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
-.avatar-preview{width:72px;height:72px;border-radius:50%;background:rgba(91,79,255,0.2);border:2px dashed rgba(91,79,255,0.4);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;transition:all 0.2s;position:relative}
-.avatar-preview:hover{border-color:rgba(91,79,255,0.7);background:rgba(91,79,255,0.15)}
-.avatar-preview img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.avatar-preview .avatar-icon{color:rgba(255,255,255,0.3);pointer-events:none}
-.avatar-info{flex:1}
-.avatar-info .av-title{color:rgba(255,255,255,0.7);font-size:0.85rem;font-weight:500;margin-bottom:2px}
-.avatar-info .av-sub{color:rgba(255,255,255,0.3);font-size:0.75rem}
 
 .field-error{font-size:0.72rem;color:#ff6b7a;margin-top:0.3rem;display:none}
 .field-error.show{display:block}
@@ -134,8 +126,8 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 .topbar{background:linear-gradient(135deg,var(--ink-2) 0%,var(--ink-3) 100%);padding:calc(0.9rem + var(--safe-top)) 1.25rem 1rem;display:flex;align-items:center;gap:0.75rem;flex-shrink:0;box-shadow:0 4px 20px rgba(13,13,26,0.3);position:relative;z-index:10}
 .topbar-logo{font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:#fff;letter-spacing:-0.02em;flex:1}
 .topbar-logo span{color:var(--accent-2)}
-.topbar-date{font-size:0.72rem;color:rgba(255,255,255,0.4);position:absolute;bottom:0.55rem;left:1.25rem}
-.profile-btn{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:all 0.2s;flex-shrink:0}
+.topbar-date{font-size:0.72rem;color:rgba(255,255,255,0.4);margin-top:2px}
+.profile-btn{width:40px;min-width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:all 0.2s;flex-shrink:0}
 .profile-btn:hover{border-color:rgba(91,79,255,0.7);box-shadow:0 0 0 3px rgba(91,79,255,0.2)}
 .profile-btn img{width:100%;height:100%;object-fit:cover}
 .profile-btn svg{stroke:rgba(255,255,255,0.6);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -188,23 +180,23 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 .add-btn:active{transform:scale(0.96)}
 
 /* ━━━━ TABLE ━━━━ */
-.task-table{width:100%;border-collapse:collapse}
+.task-table{width:100%;border-collapse:collapse;table-layout:fixed}
 .task-table thead th{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--text-3);font-weight:700;padding:0.45rem 0.9rem;text-align:left}
 .task-row td{padding:0.65rem 0.9rem;border-top:1px solid var(--border);vertical-align:middle;transition:background 0.15s}
 .task-row:hover td{background:var(--accent-soft)}
 .task-row.done .task-name{text-decoration:line-through;color:var(--text-3)}
-.col-check{width:36px}
+.col-check{width:40px}
 .checkbox{width:22px;height:22px;border-radius:7px;border:2px solid var(--border-2);background:var(--surface-2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.18s}
 .task-row.done .checkbox{background:var(--green);border-color:var(--green)}
 .checkmark{display:none;width:11px;height:11px}
 .task-row.done .checkmark{display:block}
-.task-name{font-size:0.85rem;font-weight:500;cursor:pointer;color:var(--text);line-height:1.35}
-.col-priority{width:80px}
+.task-name{overflow-wrap:anywhere;word-break:break-word;font-size:0.85rem;font-weight:500;cursor:pointer;color:var(--text);line-height:1.35}
+.col-priority{width:84px}
 .badge{display:inline-block;font-size:0.62rem;font-weight:700;letter-spacing:0.05em;padding:3px 9px;border-radius:99px;text-transform:uppercase}
 .badge.high{background:var(--red-soft);color:var(--red)}
 .badge.medium{background:var(--amber-soft);color:var(--amber)}
 .badge.low{background:var(--green-soft);color:var(--green)}
-.col-actions{width:52px;text-align:right;white-space:nowrap}
+.col-actions{width:76px;text-align:right;white-space:nowrap}
 .del-btn{background:none;border:none;color:var(--text-3);font-size:0.75rem;cursor:pointer;padding:4px;border-radius:50%;transition:all 0.15s;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center}
 .del-btn:hover{background:var(--red-soft);color:var(--red)}
 .empty-row td{text-align:center;padding:1.5rem;font-size:0.82rem;color:var(--text-3);font-style:italic;border-top:1px solid var(--border)}
@@ -214,7 +206,8 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 .add-form-row.open{display:table-row}
 .add-form-row td{padding:0.7rem 0.9rem;border-top:1px solid var(--border-2);background:var(--accent-soft)}
 .add-form-inner{display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap}
-.add-task-input{flex:1;min-width:160px;border:1.5px solid var(--border-2);border-radius:8px;padding:0.5rem 0.75rem;font-family:var(--font-body);font-size:0.85rem;background:var(--surface);color:var(--text);outline:none;transition:all 0.2s}
+.add-form-inner .add-task-input{flex:1 1 100%}
+.add-task-input{flex:1;min-width:0;border:1.5px solid var(--border-2);border-radius:8px;padding:0.5rem 0.75rem;font-family:var(--font-body);font-size:0.85rem;background:var(--surface);color:var(--text);outline:none;transition:all 0.2s}
 .add-task-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .priority-select{border:1.5px solid var(--border-2);border-radius:8px;padding:0.5rem 0.5rem;font-family:var(--font-body);font-size:0.8rem;background:var(--surface);color:var(--text);outline:none;cursor:pointer}
 .confirm-btn{background:var(--accent);border:none;border-radius:8px;padding:0.5rem 1rem;color:#fff;font-family:var(--font-body);font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.15s}
@@ -271,7 +264,7 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 /* ━━━━ CHANGE PASSWORD MODAL ━━━━ */
 .cpw-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:70;opacity:0;pointer-events:none;transition:opacity 0.25s}
 .cpw-backdrop.open{opacity:1;pointer-events:all}
-.cpw-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-60%);width:min(400px,calc(100vw - 2rem));background:var(--surface);border-radius:20px;z-index:71;padding:1.75rem;box-shadow:var(--shadow-lg);transition:transform 0.3s cubic-bezier(.4,0,.2,1),opacity 0.3s;opacity:0;pointer-events:none}
+.cpw-modal{max-height:92dvh;overflow-y:auto;position:fixed;left:50%;top:50%;transform:translate(-50%,-60%);width:min(400px,calc(100vw - 2rem));background:var(--surface);border-radius:20px;z-index:71;padding:1.75rem;box-shadow:var(--shadow-lg);transition:transform 0.3s cubic-bezier(.4,0,.2,1),opacity 0.3s;opacity:0;pointer-events:none}
 .cpw-modal.open{transform:translate(-50%,-50%);opacity:1;pointer-events:all}
 .cpw-title{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem}
 .cpw-title svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -285,7 +278,7 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 /* ━━━━ EDIT TASK MODAL ━━━━ */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:60;opacity:0;pointer-events:none;transition:opacity 0.25s}
 .modal-backdrop.open{opacity:1;pointer-events:all}
-.edit-modal{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;z-index:61;padding:1.25rem 1.5rem calc(1.5rem + var(--safe-bottom));transform:translateY(100%);transition:transform 0.35s cubic-bezier(.4,0,.2,1);box-shadow:0 -8px 48px rgba(91,79,255,0.15)}
+.edit-modal{max-height:92dvh;overflow-y:auto;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;z-index:61;padding:1.25rem 1.5rem calc(1.5rem + var(--safe-bottom));transform:translateY(100%);transition:transform 0.35s cubic-bezier(.4,0,.2,1);box-shadow:0 -8px 48px rgba(91,79,255,0.15)}
 .edit-modal.open{transform:translateY(0)}
 .modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border-2);margin:0 auto 1.25rem}
 .modal-title{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--text);margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem}
@@ -318,10 +311,28 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 .edit-icon-btn:hover{background:var(--accent-soft);color:var(--accent)}
 
 /* ━━━━ TOAST ━━━━ */
-.toast{position:fixed;bottom:calc(1.5rem + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;font-size:0.82rem;font-weight:500;padding:0.6rem 1.25rem;border-radius:99px;opacity:0;transition:all 0.25s cubic-bezier(.4,0,.2,1);z-index:200;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,0.3);pointer-events:none}
+.toast{max-width:calc(100vw - 2rem);text-align:center;position:fixed;bottom:calc(1.5rem + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;font-size:0.82rem;font-weight:500;padding:0.6rem 1.25rem;border-radius:99px;opacity:0;transition:all 0.25s cubic-bezier(.4,0,.2,1);z-index:200;box-shadow:0 4px 24px rgba(0,0,0,0.3);pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-@media(max-width:400px){.auth-card{padding:1.75rem 1.25rem}.topbar-logo{font-size:1.2rem}}
+.app-body{overflow-x:hidden}
+@media(hover:none){.edit-icon-btn{opacity:1}}
+@media(max-width:480px){
+  .app-body{padding:0.75rem;padding-bottom:calc(2rem + var(--safe-bottom))}
+  .col-priority{width:68px}
+  .col-actions{width:80px}
+  .col-check{width:34px}
+  .task-table thead th,.task-row td{padding-left:0.55rem;padding-right:0.55rem}
+  .badge{font-size:0.56rem;padding:3px 7px}
+  .add-form-inner .priority-select{flex:1}
+  .stat .n{font-size:1.6rem}
+  .prog-top{flex-wrap:wrap;gap:0.4rem}
+  .sec-head{padding:0.8rem 0.75rem}
+  .edit-icon-btn,.del-btn{width:28px;height:28px}
+}
+@media(max-width:400px){.auth-card{padding:1.75rem 1.1rem}.topbar-logo{font-size:1.2rem}.topbar{padding-left:1rem;padding-right:1rem}}
+@media(max-height:600px){.auth-logo{margin-bottom:1rem}.auth-logo .logo-icon{width:48px;height:48px;margin-bottom:0.5rem}}
+/* 16px inputs stop iOS Safari zooming the page on focus (which also causes sideways scroll) */
+@media(max-width:600px){.form-input,.edit-field,.modal-input,.add-task-input,.priority-select{font-size:16px}}
 </style>
 </head>
 <body>
@@ -329,7 +340,7 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 <!-- ━━━━ LOADING SCREEN ━━━━ -->
 <div class="screen active" id="loading-screen">
   <div class="loading-spinner"></div>
-  <div class="loading-text">Loading TodoFlow…</div>
+  <div class="loading-text">Loading ToDoFlow…</div>
 </div>
 
 <!-- ━━━━ AUTH SCREEN ━━━━ -->
@@ -340,7 +351,7 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
       <div class="logo-icon">
         <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
       </div>
-      <h1>TodoFlow</h1>
+      <h1>ToDoFlow</h1>
       <p>Your tasks, beautifully organized</p>
     </div>
 
@@ -373,17 +384,6 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
 
     <!-- ── REGISTER FORM ── -->
     <div id="form-register" style="display:none">
-      <div class="avatar-upload">
-        <div class="avatar-preview" id="reg-avatar-preview" onclick="document.getElementById('reg-avatar-input').click()">
-          <svg class="avatar-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <div class="avatar-info">
-          <div class="av-title">Profile Photo</div>
-          <div class="av-sub">Tap to upload (optional)</div>
-        </div>
-        <input type="file" id="reg-avatar-input" accept="image/*" style="display:none" onchange="previewAvatar(this,'reg-avatar-preview','reg-avatar-data')">
-        <input type="hidden" id="reg-avatar-data">
-      </div>
       <div class="form-group">
         <label class="form-label">Full Name</label>
         <input class="form-input" id="reg-name" type="text" placeholder="Jane Doe">
@@ -454,15 +454,15 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
   <div class="update-banner" id="update-banner" onclick="installUpdate()">🚀 Update ready — click to restart and install</div>
 
   <div class="topbar">
-    <div>
-      <div class="topbar-logo">Todo<span>Flow</span></div>
+    <div style="min-width:0">
+      <div class="topbar-logo" style="flex:none">To<span>Do</span></div>
+      <div class="topbar-date" id="today-date"></div>
     </div>
     <div style="flex:1"></div>
     <div id="sync-dot" class="sync-dot" title="Synced"></div>
     <div class="profile-btn" id="profile-btn" onclick="openProfile()">
       <svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </div>
-    <div class="topbar-date" id="today-date"></div>
   </div>
 
   <div class="app-body">
@@ -494,7 +494,7 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
         <button class="add-btn" onclick="toggleAddForm('work')">+ Add Task</button>
       </div>
       <table class="task-table">
-        <thead><tr><th></th><th>Task</th><th class="col-priority">Priority</th><th class="col-actions"></th></tr></thead>
+        <thead><tr><th class="col-check"></th><th>Task</th><th class="col-priority">Priority</th><th class="col-actions"></th></tr></thead>
         <tbody id="work-tasks"></tbody>
       </table>
     </div>
@@ -510,7 +510,7 @@ body{font-family:var(--font-body);background:var(--surface-2);color:var(--text);
         <button class="add-btn" onclick="toggleAddForm('personal')">+ Add Task</button>
       </div>
       <table class="task-table">
-        <thead><tr><th></th><th>Task</th><th class="col-priority">Priority</th><th class="col-actions"></th></tr></thead>
+        <thead><tr><th class="col-check"></th><th>Task</th><th class="col-priority">Priority</th><th class="col-actions"></th></tr></thead>
         <tbody id="personal-tasks"></tbody>
       </table>
     </div>
@@ -690,6 +690,9 @@ const db   = firebase.firestore();
 
 // ★ FIX: Enable Firestore offline persistence so todos work without internet
 //   Uses IndexedDB internally; syncs automatically when back online.
+// Long-polling auto-detect: WebView/proxied networks often break Firestore's
+// default WebChannel stream, which makes reads hang instead of failing.
+db.settings({ experimentalAutoDetectLongPolling: true, merge: true });
 db.enablePersistence({ synchronizeTabs: false })
   .catch(err => {
     if (err.code === 'failed-precondition') {
@@ -770,31 +773,6 @@ function fieldErr(id, msg) {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━
-//  AVATAR PREVIEW
-// ━━━━━━━━━━━━━━━━━━━━━━━━
-function previewAvatar(input, previewId, dataId) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 2*1024*1024) { showToast('Image must be under 2MB'); return; }
-  const canvas = document.createElement('canvas');
-  const img = new Image();
-  const objectUrl = URL.createObjectURL(file);
-  img.onload = () => {
-    const MAX = 200;
-    let w = img.width, h = img.height;
-    if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-    else       { w = Math.round(w * MAX / h); h = MAX; }
-    canvas.width = w; canvas.height = h;
-    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    const data = canvas.toDataURL('image/jpeg', 0.7);
-    URL.revokeObjectURL(objectUrl);
-    document.getElementById(dataId).value = data;
-    document.getElementById(previewId).innerHTML = `<img src="${data}" alt="avatar">`;
-  };
-  img.src = objectUrl;
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━
 //  REGISTER
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 async function doRegister() {
@@ -803,7 +781,6 @@ async function doRegister() {
   const username = document.getElementById('reg-username').value.trim().toLowerCase();
   const email    = document.getElementById('reg-email').value.trim().toLowerCase();
   const pass     = document.getElementById('reg-pass').value;
-  const avatar   = document.getElementById('reg-avatar-data').value;
 
   let ok = true;
   if (!name)                                                          { fieldErr('name','Full name is required'); ok=false; }
@@ -812,31 +789,49 @@ async function doRegister() {
   if (!pass || pass.length < 6)                                       { fieldErr('pass','Password must be at least 6 characters'); ok=false; }
   if (!ok) return;
 
-  const usnap = await db.collection('usernames').doc(username).get().catch(() => null);
-  if (usnap && usnap.exists) { fieldErr('username','This username is taken'); return; }
-
   const btn = document.getElementById('btn-register');
   btn.disabled = true; btn.textContent = 'Creating account…';
 
+  // Hold the auth listener back until the profile documents exist, otherwise
+  // it races the writes below and sees a user with no profile.
+  registering = true;
+  let cred = null;
   try {
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    cred = await auth.createUserWithEmailAndPassword(email, pass);
     const uid  = cred.user.uid;
+
+    // Username uniqueness is checked once signed in (rules usually require auth)
+    const usnap = await withTimeout(db.collection('usernames').doc(username).get(), 'Checking username');
+    if (usnap.exists && usnap.data().uid !== uid) {
+      const e = new Error('This username is taken'); e.field = 'username'; throw e;
+    }
+
     const userDoc = {
       uid, name, username, email,
-      avatar: avatar || '',
+      avatar: '',
       todos: { work: [], personal: [] },
       createdAt: Date.now()
     };
-    await db.collection('users').doc(uid).set(userDoc);
-    await db.collection('usernames').doc(username).set({ uid });
-    await cred.user.updateProfile({ displayName: name });
-    // onAuthStateChanged fires → enterApp()
+    const batch = db.batch();
+    batch.set(db.collection('users').doc(uid), userDoc);
+    batch.set(db.collection('usernames').doc(username), { uid });
+    await withTimeout(batch.commit(), 'Saving profile');
+    await cred.user.updateProfile({ displayName: name }).catch(() => {});
+
+    registering = false;
+    newlyRegistered = true;
+    currentProfile = userDoc;
+    enterApp(userDoc);
   } catch (err) {
+    registering = false;
+    // Roll back the half-created account so the user can simply try again
+    // instead of hitting "email already registered" with no profile behind it.
+    if (cred && cred.user) {
+      await cred.user.delete().catch(() => auth.signOut().catch(() => {}));
+    }
     btn.disabled = false; btn.textContent = 'Create Account';
-    const msg = err.code === 'auth/email-already-in-use'
-      ? 'This email is already registered.'
-      : err.message;
-    showAuthError(msg);
+    if (err.field) { fieldErr(err.field, err.message); return; }
+    showAuthError(friendlyAuthError(err));
   }
 }
 
@@ -852,16 +847,42 @@ async function doLogin() {
   const btn = document.getElementById('btn-login');
   btn.disabled = true; btn.textContent = 'Signing in…';
   try {
-    await auth.signInWithEmailAndPassword(email, pass);
-    // onAuthStateChanged fires → enterApp()
+    await withTimeout(auth.signInWithEmailAndPassword(email, pass), 'Signing in');
+    // onAuthStateChanged fires → loadProfileAndEnter(); it resets the button on failure
   } catch (err) {
     btn.disabled = false; btn.textContent = 'Sign In';
-    const code = err.code;
-    const msg = (code === 'auth/wrong-password' || code === 'auth/user-not-found' || code === 'auth/invalid-credential')
-      ? 'Invalid email or password.'
-      : err.message;
-    showAuthError(msg);
+    showAuthError(friendlyAuthError(err));
   }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━
+//  HELPERS
+// ━━━━━━━━━━━━━━━━━━━━━━━━
+function withTimeout(promise, what, ms = 20000) {
+  let t;
+  const timeout = new Promise((_, rej) => {
+    t = setTimeout(() => rej(Object.assign(new Error(what + ' timed out. Check your connection and try again.'), { code: 'app/timeout' })), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(t));
+}
+
+function friendlyAuthError(err) {
+  switch (err.code) {
+    case 'auth/email-already-in-use': return 'This email is already registered. Try signing in.';
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+    case 'auth/invalid-credential':   return 'Invalid email or password.';
+    case 'auth/invalid-email':        return 'Enter a valid email address.';
+    case 'auth/weak-password':        return 'Password is too weak — use at least 6 characters.';
+    case 'auth/too-many-requests':    return 'Too many attempts. Please wait a moment and try again.';
+    case 'auth/network-request-failed': return 'Network error. Check your connection and try again.';
+    case 'permission-denied':         return 'Database permission denied. Check the Firestore security rules.';
+    default:                          return err.message || 'Something went wrong. Please try again.';
+  }
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -983,22 +1004,62 @@ function showCpwErr(field, msg) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 //  FIREBASE AUTH STATE LISTENER
 // ━━━━━━━━━━━━━━━━━━━━━━━━
-let currentProfile  = null;
-let unsubscribeSync = null;
+let currentProfile   = null;
+let unsubscribeSync  = null;
+let registering      = false;   // true while doRegister() is writing the profile
+let newlyRegistered  = false;   // open the profile panel once so a photo can be added
 
-auth.onAuthStateChanged(async fbUser => {
+async function fetchProfile(uid) {
+  const ref = db.collection('users').doc(uid);
+  try {
+    return await withTimeout(ref.get(), 'Loading your profile');
+  } catch (e) {
+    // Server unreachable → fall back to whatever is cached locally
+    try { return await ref.get({ source: 'cache' }); } catch (_) { throw e; }
+  }
+}
+
+// Accounts created before this fix may have an auth user but no profile
+// document (the old register flow could fail half-way). Rebuild it.
+async function createMissingProfile(fbUser) {
+  const base = (fbUser.email || 'user').split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 14) || 'user';
+  let username = base.length >= 3 ? base : base + '_user';
+  const taken = await db.collection('usernames').doc(username).get();
+  if (taken.exists && taken.data().uid !== fbUser.uid) username += Math.floor(Math.random() * 9000 + 1000);
+  const doc = {
+    uid: fbUser.uid,
+    name: fbUser.displayName || base,
+    username,
+    email: (fbUser.email || '').toLowerCase(),
+    avatar: '',
+    todos: { work: [], personal: [] },
+    createdAt: Date.now()
+  };
+  const batch = db.batch();
+  batch.set(db.collection('users').doc(fbUser.uid), doc);
+  batch.set(db.collection('usernames').doc(username), { uid: fbUser.uid });
+  await withTimeout(batch.commit(), 'Restoring your profile');
+  return doc;
+}
+
+async function loadProfileAndEnter(fbUser) {
+  try {
+    const snap = await fetchProfile(fbUser.uid);
+    const profile = snap.exists ? snap.data() : await createMissingProfile(fbUser);
+    currentProfile = profile;
+    enterApp(profile);
+  } catch (err) {
+    console.error('Profile load failed:', err);
+    await auth.signOut().catch(() => {});
+    showScreen('auth');
+    showAuthError(friendlyAuthError(err));
+  }
+}
+
+auth.onAuthStateChanged(fbUser => {
+  if (registering) return;           // doRegister() enters the app itself
   if (fbUser) {
-    let snap = await db.collection('users').doc(fbUser.uid).get();
-    if (!snap.exists) {
-      await new Promise(r => setTimeout(r, 1500));
-      snap = await db.collection('users').doc(fbUser.uid).get();
-    }
-    if (snap.exists) {
-      currentProfile = snap.data();
-      enterApp(currentProfile);
-    } else {
-      showScreen('auth');
-    }
+    loadProfileAndEnter(fbUser);
   } else {
     currentProfile = null;
     if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
@@ -1039,6 +1100,10 @@ function enterApp(profile) {
   updateOnlineBanner();
   setSyncStatus('synced');
   startRealtimeSync();
+  if (newlyRegistered) {
+    newlyRegistered = false;
+    setTimeout(() => { openProfile(); showToast('Tap your picture to add a profile photo'); }, 500);
+  }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1050,7 +1115,18 @@ function startRealtimeSync() {
   if (!uid) return;
   unsubscribeSync = db.collection('users').doc(uid)
     .onSnapshot(snap => {
-      if (snap.exists) { currentProfile = snap.data(); setSyncStatus('synced'); }
+      if (!snap.exists) return;
+      const incoming = snap.data();
+      setSyncStatus('synced');
+      // Another device changed the tasks → re-render, unless we have unsaved local edits
+      const remoteChange = !snap.metadata.hasPendingWrites && !saveTimer &&
+        JSON.stringify(incoming.todos || {}) !== JSON.stringify(currentProfile?.todos || {});
+      currentProfile = incoming;
+      if (remoteChange) {
+        renderSection('work',     incoming.todos?.work     || []);
+        renderSection('personal', incoming.todos?.personal || []);
+        updateDashboard();
+      }
     }, () => setSyncStatus('offline'));
 }
 
@@ -1064,7 +1140,7 @@ function setSyncStatus(status) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 //  PERSIST TODOS → FIRESTORE
 // ━━━━━━━━━━━━━━━━━━━━━━━━
-let saveTimer = null;
+let saveTimer = null;   // non-null while a local edit is waiting to be written
 function persistTodos() {
   const uid = auth.currentUser?.uid;
   if (!uid || !currentProfile) return;
@@ -1078,8 +1154,10 @@ function persistTodos() {
   saveTimer = setTimeout(async () => {
     try {
       await db.collection('users').doc(uid).update({ todos });
+      saveTimer = null;
       setSyncStatus('synced');
     } catch (e) {
+      saveTimer = null;
       setSyncStatus('offline');
       console.error('Save failed:', e);
     }
@@ -1102,6 +1180,7 @@ function collectTasks(section) {
 //  SIGN OUT
 // ━━━━━━━━━━━━━━━━━━━━━━━━
 async function doSignOut() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; try { await db.collection('users').doc(auth.currentUser.uid).update({ todos: currentProfile.todos }); } catch (_) {} }
   if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
   closeProfile();
   currentProfile = null;
@@ -1171,14 +1250,24 @@ async function saveProfile() {
   }
   const uid = auth.currentUser?.uid;
   if (!uid) return;
-  if (username !== currentProfile.username) {
-    const usnap = await db.collection('usernames').doc(username).get();
-    if (usnap.exists) { errU.textContent = 'Username taken'; errU.classList.add('show'); return; }
-    await db.collection('usernames').doc(currentProfile.username).delete();
-    await db.collection('usernames').doc(username).set({ uid });
+  try {
+    if (username !== currentProfile.username) {
+      const usnap = await db.collection('usernames').doc(username).get();
+      if (usnap.exists) { errU.textContent = 'Username taken'; errU.classList.add('show'); return; }
+      const batch = db.batch();
+      batch.delete(db.collection('usernames').doc(currentProfile.username));
+      batch.set(db.collection('usernames').doc(username), { uid });
+      batch.update(db.collection('users').doc(uid), { name, username });
+      await batch.commit();
+    } else {
+      await db.collection('users').doc(uid).update({ name });
+    }
+    await auth.currentUser.updateProfile({ displayName: name });
+  } catch (err) {
+    console.error('Profile save failed:', err);
+    showToast('Could not save profile');
+    return;
   }
-  await db.collection('users').doc(uid).update({ name, username });
-  await auth.currentUser.updateProfile({ displayName: name });
   currentProfile.name     = name;
   currentProfile.username = username;
   updateProfileBtn();
@@ -1265,7 +1354,7 @@ function makeRow(section, task) {
   const lbl = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
   tr.innerHTML = `
     <td class="col-check"><div class="checkbox">${ckSVG()}</div></td>
-    <td class="task-name col-name">${task.name}</td>
+    <td class="task-name col-name">${escapeHtml(task.name)}</td>
     <td class="col-priority"><span class="badge ${task.priority}">${lbl}</span></td>
     <td class="col-actions">
       <button class="edit-icon-btn" title="Edit task">

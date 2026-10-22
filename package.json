@@ -1,11 +1,11 @@
 {
   "name": "todoflow",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "author": {
     "name": "Gaurav Sharan Sah",
     "email": "shambhu1gaurabh@gmail.com"
   },
-  "description": "TodoFlow - Cross-Platform Todo App with Global Sync",
+  "description": "ToDoFlow - Cross-Platform Todo App with Global Sync",
   "main": "main.js",
   "homepage": "./",
   "scripts": {
@@ -39,8 +39,8 @@
   },
   "build": {
     "appId": "com.todoflow.app",
-    "productName": "TodoFlow",
-    "copyright": "Copyright © 2024 TodoFlow",
+    "productName": "ToDoFlow",
+    "copyright": "Copyright © 2026 ToDoFlow",
     "directories": {
       "output": "dist"
     },
@@ -52,18 +52,17 @@
     ],
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ],
       "icon": "src/icon.ico",
-      "artifactName": "TodoFlow-${version}-Setup.${ext}"
+      "artifactName": "ToDoFlow-${version}-Windows.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "TodoFlow",
+      "shortcutName": "ToDoFlow",
       "installerIcon": "src/icon.ico",
       "uninstallerIcon": "src/icon.ico"
     },
@@ -72,23 +71,21 @@
         {
           "target": "dmg",
           "arch": [
-            "x64",
-            "arm64"
+            "universal"
           ]
         }
       ],
       "icon": "src/icon-512.png",
       "category": "public.app-category.productivity",
-      "artifactName": "TodoFlow-${version}-${arch}.${ext}"
+      "artifactName": "ToDoFlow-${version}-macOS.${ext}"
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        "AppImage"
       ],
       "icon": "src/icon-512.png",
       "category": "Utility",
-      "artifactName": "TodoFlow-${version}.${ext}"
+      "artifactName": "ToDoFlow-${version}-Linux.${ext}"
     },
     "publish": {
       "provider": "github",

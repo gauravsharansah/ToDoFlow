@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// SVG source — a clean 1024×1024 TodoFlow icon.
+// SVG source — a clean 1024×1024 ToDoFlow icon.
 // Replace SVG_ICON with your own design, or point sharp() at a high-res PNG:
 //   e.g.  sharp('/path/to/your-logo-1024.png').resize(s, s)...
 const SVG_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">

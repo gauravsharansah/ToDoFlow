@@ -1,4 +1,4 @@
-const CACHE = 'todoflow-v3';
+const CACHE = 'todoflow-v4';
 const ASSETS = [
   './',
   './index.html',
