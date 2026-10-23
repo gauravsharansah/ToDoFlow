@@ -49,6 +49,8 @@ todoflow/
 
 Push a version tag to automatically trigger builds across all platforms via GitHub Actions. A GitHub Release is published with all platform installers in approximately 10 minutes.
 
+Setup notes (Firestore rules, GitHub secrets, Android signing key): see [docs/SETUP.md](docs/SETUP.md).
+
 Optional code signing for Play Store (Android) and notarization (macOS) is supported via GitHub Secrets — see `.github/workflows/build-release.yml`.
 
 ---

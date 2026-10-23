@@ -1,5 +1,9 @@
 apply plugin: 'com.android.application'
 
+// versionName/versionCode follow package.json so each release can update the last
+def appVersion = new groovy.json.JsonSlurper().parse(file('../../package.json')).version
+def (vMajor, vMinor, vPatch) = appVersion.tokenize('.-')[0..2].collect { it.toInteger() }
+
 android {
     namespace "com.todoflow.app"
     compileSdk rootProject.ext.compileSdkVersion
@@ -7,8 +11,8 @@ android {
         applicationId "com.todoflow.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode vMajor * 10000 + vMinor * 100 + vPatch
+        versionName appVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +20,25 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // One permanent key for every release, so a new APK installs over the old one
+    // (Android refuses an update signed with a different key). The key and its
+    // password are never stored in the repo: CI passes them in via environment.
+    def ksFile = System.getenv('ANDROID_KEYSTORE_FILE')
+    def ksPass = System.getenv('ANDROID_KEYSTORE_PASSWORD')
+    if (ksFile && ksPass) {
+        signingConfigs {
+            release {
+                storeFile file(ksFile)
+                storeType 'pkcs12'
+                storePassword ksPass
+                keyAlias 'todoflow'
+                keyPassword ksPass
+            }
+        }
+    }
     buildTypes {
         release {
+            if (ksFile && ksPass) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

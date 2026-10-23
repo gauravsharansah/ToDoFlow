@@ -1,8 +1,9 @@
 name: Build & Release
 
-# Release assets (exactly four):
+# Release assets (five):
 #   ToDoFlow-<version>-Windows.exe   ToDoFlow-<version>-Linux.AppImage
-#   ToDoFlow-<version>-macOS.dmg     ToDoFlow-<version>-Android.apk
+#   ToDoFlow-<version>-macOS-x64.dmg (Intel)   ToDoFlow-<version>-macOS-arm64.dmg (Apple Silicon)
+#   ToDoFlow-<version>-Android.apk
 # iOS is not built: it needs a paid Apple Developer account for signing.
 
 on:
@@ -15,9 +16,9 @@ permissions:
   contents: write
 
 jobs:
-  windows-linux:
-    name: Windows & Linux
-    runs-on: ubuntu-latest
+  windows:
+    name: Windows
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,6 +28,7 @@ jobs:
       - run: npm ci
 
       - name: Inject Firebase credentials
+        shell: bash
         env:
           FIREBASE_API_KEY:             ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_AUTH_DOMAIN:         ${{ secrets.FIREBASE_AUTH_DOMAIN }}
@@ -42,28 +44,49 @@ jobs:
           sed -i "s|__FIREBASE_MESSAGING_SENDER_ID__|${FIREBASE_MESSAGING_SENDER_ID}|g" src/index.html
           sed -i "s|__FIREBASE_APP_ID__|${FIREBASE_APP_ID}|g"                           src/index.html
 
-      - name: Install Wine (Windows build on Linux)
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update
-          sudo apt-get install -y wine wine32 wine64 || true
-
       - name: Build Windows installer
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist:win
 
-      - name: Build Linux AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/ToDoFlow-*-Windows.exe
+
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Inject Firebase credentials
+        shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FIREBASE_API_KEY:             ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN:         ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID:          ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET:      ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID:              ${{ secrets.FIREBASE_APP_ID }}
+        run: |
+          sed -i "s|__FIREBASE_API_KEY__|${FIREBASE_API_KEY}|g"                         src/index.html
+          sed -i "s|__FIREBASE_AUTH_DOMAIN__|${FIREBASE_AUTH_DOMAIN}|g"                 src/index.html
+          sed -i "s|__FIREBASE_PROJECT_ID__|${FIREBASE_PROJECT_ID}|g"                   src/index.html
+          sed -i "s|__FIREBASE_STORAGE_BUCKET__|${FIREBASE_STORAGE_BUCKET}|g"           src/index.html
+          sed -i "s|__FIREBASE_MESSAGING_SENDER_ID__|${FIREBASE_MESSAGING_SENDER_ID}|g" src/index.html
+          sed -i "s|__FIREBASE_APP_ID__|${FIREBASE_APP_ID}|g"                           src/index.html
+
+      - name: Build Linux AppImage
         run: npm run dist:linux
 
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-linux
-          path: |
-            dist/ToDoFlow-*-Windows.exe
-            dist/ToDoFlow-*-Linux.AppImage
+          name: linux
+          path: dist/ToDoFlow-*-Linux.AppImage
 
   macos:
     name: macOS
@@ -92,7 +115,7 @@ jobs:
           sed -i "" "s|__FIREBASE_MESSAGING_SENDER_ID__|${FIREBASE_MESSAGING_SENDER_ID}|g" src/index.html
           sed -i "" "s|__FIREBASE_APP_ID__|${FIREBASE_APP_ID}|g"                           src/index.html
 
-      - name: Build universal DMG (Intel + Apple Silicon)
+      - name: Build DMGs (Intel x64 + Apple Silicon arm64)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist:mac
@@ -100,7 +123,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macos
-          path: dist/ToDoFlow-*-macOS.dmg
+          path: dist/ToDoFlow-*-macOS-*.dmg
 
   android:
     name: Android
@@ -136,24 +159,38 @@ jobs:
       - run: npx cap sync android --inline
       - run: chmod +x android/gradlew
 
-      # The debug build is signed with the Android debug key, so it installs
-      # directly. An unsigned release APK cannot be installed on a phone.
+      # With the ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD secrets set,
+      # the APK is signed with one permanent key, so every release installs over
+      # the previous one. Without them it falls back to a debug-signed APK (which
+      # installs, but cannot update an APK built by a different run).
       - name: Build APK
-        run: cd android && ./gradlew assembleDebug --no-daemon
-
-      - name: Rename APK
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          mv android/app/build/outputs/apk/debug/app-debug.apk "android/app/build/outputs/apk/debug/ToDoFlow-${VERSION}-Android.apk"
+          cd android
+          if [ -n "$KS_B64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/todoflow-release.p12"
+            export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/todoflow-release.p12"
+            ./gradlew assembleRelease --no-daemon
+            SRC=app/build/outputs/apk/release/app-release.apk
+          else
+            echo "::warning::Android signing secrets not set - building a debug-signed APK; it will not update over an APK from a different build."
+            ./gradlew assembleDebug --no-daemon
+            SRC=app/build/outputs/apk/debug/app-debug.apk
+          fi
+          mkdir -p app/build/outputs/final
+          mv "$SRC" "app/build/outputs/final/ToDoFlow-${VERSION}-Android.apk"
 
       - uses: actions/upload-artifact@v4
         with:
           name: android
-          path: android/app/build/outputs/apk/debug/ToDoFlow-*-Android.apk
+          path: android/app/build/outputs/final/ToDoFlow-*-Android.apk
 
   release:
     name: GitHub Release
-    needs: [windows-linux, macos, android]
+    needs: [windows, linux, macos, android]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -166,7 +203,8 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: release-files/**/*
-          generate_release_notes: true
+          body: release ${{ github.ref_name }}
+          generate_release_notes: false
           prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

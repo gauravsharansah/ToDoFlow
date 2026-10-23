@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // A profile is private to its owner.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+                            && request.resource.data.uid == uid;
+      allow delete: if false;
+    }
+
+    // Username -> uid lookup. Signed-in users can check one name at a time (no listing).
+    match /usernames/{name} {
+      allow get: if request.auth != null;
+      allow list: if false;
+      // Claim a free name for yourself only (updating an existing one is denied).
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['uid']);
+      // Release only your own name (needed when you change username).
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update: if false;
+    }
+  }
+}

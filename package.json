@@ -1,6 +1,6 @@
 {
   "name": "todoflow",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": {
     "name": "Gaurav Sharan Sah",
     "email": "shambhu1gaurabh@gmail.com"
@@ -14,7 +14,6 @@
     "dist:win": "electron-builder --win --publish never",
     "dist:mac": "electron-builder --mac --publish never",
     "dist:linux": "electron-builder --linux --publish never",
-    "dist:publish": "electron-builder --publish always",
     "android:add": "cap add android",
     "android:sync": "cap sync android",
     "android:open": "cap open android",
@@ -23,11 +22,8 @@
     "icons": "node generate-icons.js && node make-ico.js",
     "postinstall": "electron-builder install-app-deps"
   },
-  "dependencies": {
-    "electron-updater": "^6.1.0",
-    "firebase": "^12.13.0"
-  },
   "devDependencies": {
+    "firebase": "^12.13.0",
     "@capacitor/android": "^6.0.0",
     "@capacitor/cli": "^6.0.0",
     "@capacitor/core": "^6.0.0",
@@ -38,6 +34,9 @@
     "sharp": "^0.33.0"
   },
   "build": {
+    "compression": "maximum",
+    "afterSign": "scripts/adhoc-sign.js",
+    "electronLanguages": ["en-US"],
     "appId": "com.todoflow.app",
     "productName": "ToDoFlow",
     "copyright": "Copyright © 2026 ToDoFlow",
@@ -46,6 +45,7 @@
     },
     "files": [
       "main.js",
+      "preload.js",
       "src/**/*",
       "node_modules/**/*",
       "!node_modules/**/*.map"
@@ -71,13 +71,20 @@
         {
           "target": "dmg",
           "arch": [
-            "universal"
+            "x64",
+            "arm64"
           ]
         }
       ],
       "icon": "src/icon-512.png",
       "category": "public.app-category.productivity",
-      "artifactName": "ToDoFlow-${version}-macOS.${ext}"
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "artifactName": "ToDoFlow-${version}-macOS-${arch}.${ext}"
+    },
+    "dmg": {
+      "format": "UDBZ"
     },
     "linux": {
       "target": [
@@ -86,12 +93,6 @@
       "icon": "src/icon-512.png",
       "category": "Utility",
       "artifactName": "ToDoFlow-${version}-Linux.${ext}"
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "gauravsharansah",
-      "repo": "todoflow",
-      "private": false
     }
   }
 }
